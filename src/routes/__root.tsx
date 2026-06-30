@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "lamp login interface" },
+      { name: "description", content: "Lumina Login offers a cinematic, interactive single-page login experience with a dark, luxurious aesthetic." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "lamp login interface" },
+      { property: "og:description", content: "Lumina Login offers a cinematic, interactive single-page login experience with a dark, luxurious aesthetic." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "lamp login interface" },
+      { name: "twitter:description", content: "Lumina Login offers a cinematic, interactive single-page login experience with a dark, luxurious aesthetic." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f9fd101b-ff49-4701-bcb7-74b31a13936e/id-preview-95a4a464--e8adda6b-5774-401d-81c2-8384e4077d01.lovable.app-1782848933990.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f9fd101b-ff49-4701-bcb7-74b31a13936e/id-preview-95a4a464--e8adda6b-5774-401d-81c2-8384e4077d01.lovable.app-1782848933990.png" },
     ],
     links: [
       {
