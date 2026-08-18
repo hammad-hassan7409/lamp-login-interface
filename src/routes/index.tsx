@@ -4,10 +4,10 @@ import LampLogin from "@/components/LampLogin";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lumen — Sign in" },
-      { name: "description", content: "A cinematic dark-luxury sign in experience." },
-      { property: "og:title", content: "Lumen — Sign in" },
-      { property: "og:description", content: "A cinematic dark-luxury sign in experience." },
+      { title: "Sign In — Lumen Studio" },
+      { name: "description", content: "Access your Lumen Studio account through our premium, cinematic interactive interface." },
+      { property: "og:title", content: "Sign In — Lumen Studio" },
+      { property: "og:description", content: "Access your Lumen Studio account through our premium, cinematic interactive interface." },
     ],
   }),
   component: Index,
