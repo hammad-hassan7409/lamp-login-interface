@@ -365,7 +365,7 @@ export default function LampLogin() {
         </div>
 
         <footer className="absolute bottom-6 left-0 right-0 text-center text-[10px] tracking-[0.4em] uppercase text-neutral-600">
-          Lumen · Cinematic Access
+          <p>© {new Date().getFullYear()} Lumen · Cinematic Access</p>
         </footer>
       </main>
 
