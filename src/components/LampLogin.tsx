@@ -283,9 +283,6 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
 
           <div className="relative space-y-6">
             <div className="space-y-1">
-              <p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">
-                Lumen Studio
-              </p>
               <h1 className="font-serif text-2xl text-neutral-50">Welcome back</h1>
             </div>
 
