@@ -144,3 +144,39 @@
     color: var(--color-foreground);
   }
 }
+
+/*
+ * The "Edit with Lovable" badge is injected as an <aside id="lovable-badge">
+ * element at the end of <body> on served deployments. It is position: fixed,
+ * so taking it out of the box model removes it without moving or resizing
+ * anything else on the page. This block stays unlayered and !important so it
+ * wins over the badge's own injected <style>, which is written later in the
+ * document.
+ */
+#lovable-badge,
+#lovable-badge *,
+[id^="lovable-badge"],
+[id^="lovable-badge"] *,
+[data-lovable-badge],
+[data-lovable-badge] *,
+[class^="lovable-badge"],
+[class*=" lovable-badge"],
+aside[aria-label="Edit with Lovable"],
+aside[aria-label="Made with Lovable"],
+iframe[src*="lovable.dev/badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
