@@ -116,12 +116,15 @@ function Lamp({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 }
 
 // ------ Swipe Auth ------
+const DEMO_USER = "ada.lovelace";
+const DEMO_PASS = "lumen2026";
+
 function SwipeAuth({
-  onSuccess,
-  disabled,
+  onAttempt,
+  error,
 }: {
-  onSuccess: () => void;
-  disabled?: boolean;
+  onAttempt: () => boolean;
+  error: boolean;
 }) {
   const TRACK = 220;
   const HANDLE = 48;
@@ -131,28 +134,33 @@ function SwipeAuth({
   const opacityLabel = useTransform(y, [0, MAX * 0.6], [1, 0]);
   const fillHeight = useTransform(y, (v) => v + HANDLE);
 
+  const fillBg = done
+    ? "linear-gradient(180deg, rgba(74,222,128,0.55), rgba(34,197,94,0.25))"
+    : error
+      ? "linear-gradient(180deg, rgba(248,113,113,0.55), rgba(239,68,68,0.2))"
+      : "linear-gradient(180deg, rgba(255,210,120,0.35), rgba(255,160,80,0.10))";
+  const handleBg = done
+    ? "linear-gradient(180deg,#86efac,#22c55e)"
+    : error
+      ? "linear-gradient(180deg,#fca5a5,#ef4444)"
+      : "linear-gradient(180deg,#f5f5f5,#bdbdbd)";
+
   return (
     <div className="flex flex-col items-center gap-3">
-      <div
-        className="relative overflow-hidden rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm"
-        style={{ width: 64, height: TRACK }}
+      <motion.div
+        animate={error ? { x: [0, -8, 8, -5, 5, 0] } : { x: 0 }}
+        transition={{ duration: 0.45 }}
+        className="relative overflow-hidden rounded-full border bg-white/[0.03] backdrop-blur-sm transition-colors duration-300"
+        style={{
+          width: 64,
+          height: TRACK,
+          borderColor: error ? "rgba(248,113,113,0.6)" : "rgba(255,255,255,0.1)",
+        }}
       >
-        {/* fill */}
-        <motion.div
-          style={{ height: fillHeight }}
-          className="absolute inset-x-0 top-0"
-        >
-          <div
-            className="h-full w-full"
-            style={{
-              background: done
-                ? "linear-gradient(180deg, rgba(74,222,128,0.55), rgba(34,197,94,0.25))"
-                : "linear-gradient(180deg, rgba(255,210,120,0.35), rgba(255,160,80,0.10))",
-            }}
-          />
+        <motion.div style={{ height: fillHeight }} className="absolute inset-x-0 top-0">
+          <div className="h-full w-full transition-all duration-300" style={{ background: fillBg }} />
         </motion.div>
 
-        {/* label */}
         <motion.div
           style={{ opacity: opacityLabel }}
           className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-[10px] tracking-[0.25em] uppercase text-neutral-300"
@@ -161,9 +169,8 @@ function SwipeAuth({
           <span style={{ writingMode: "vertical-rl" }}>Swipe to enter</span>
         </motion.div>
 
-        {/* handle */}
         <motion.div
-          drag={disabled || done ? false : "y"}
+          drag={done ? false : "y"}
           dragConstraints={{ top: 0, bottom: MAX }}
           dragElastic={0.05}
           dragMomentum={false}
@@ -171,9 +178,12 @@ function SwipeAuth({
           onDragEnd={() => {
             const v = y.get();
             if (v / MAX >= 0.85) {
-              animate(y, MAX, { type: "spring", stiffness: 300, damping: 30 });
-              setDone(true);
-              setTimeout(onSuccess, 600);
+              if (onAttempt()) {
+                animate(y, MAX, { type: "spring", stiffness: 300, damping: 30 });
+                setDone(true);
+              } else {
+                animate(y, 0, { type: "spring", stiffness: 220, damping: 18 });
+              }
             } else {
               animate(y, 0, { type: "spring", stiffness: 220, damping: 18 });
             }
@@ -182,34 +192,29 @@ function SwipeAuth({
           whileTap={{ scale: 0.96 }}
         >
           <div
-            className="-translate-x-1/2 flex h-full w-full items-center justify-center rounded-full"
-            style={{
-              background: done
-                ? "linear-gradient(180deg,#86efac,#22c55e)"
-                : "linear-gradient(180deg,#f5f5f5,#bdbdbd)",
-            }}
+            className="-translate-x-1/2 flex h-full w-full items-center justify-center rounded-full transition-all duration-300"
+            style={{ background: handleBg }}
           >
             <AnimatePresence mode="wait">
               {done ? (
-                <motion.div
-                  key="ok"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                >
+                <motion.div key="ok" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                   <Check className="h-5 w-5 text-white" strokeWidth={3} />
                 </motion.div>
               ) : (
-                <motion.div key="dn" className="text-neutral-700">
+                <motion.div key="dn" className={error ? "text-white" : "text-neutral-700"}>
                   <ChevronDown className="h-5 w-5" />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </motion.div>
-      </div>
-      <p className="text-[10px] tracking-[0.3em] uppercase text-neutral-500">
-        {done ? "Authenticated" : "Drag down to enter"}
+      </motion.div>
+      <p
+        className={`text-[10px] tracking-[0.3em] uppercase transition-colors ${
+          done ? "text-green-400" : error ? "text-red-400" : "text-neutral-500"
+        }`}
+      >
+        {done ? "Authenticated" : error ? "Try again" : "Drag down to enter"}
       </p>
     </div>
   );
@@ -219,6 +224,9 @@ function SwipeAuth({
 function LoginCard({ visible, success }: { visible: boolean; success: boolean }) {
   const [showPw, setShowPw] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const float = useSpring(0, { stiffness: 30, damping: 10 });
   useEffect(() => {
     const ctrl = animate(float, [0, -6, 0, 4, 0], {
@@ -229,6 +237,26 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
     return () => ctrl.stop();
   }, [float]);
 
+  const attempt = () => {
+    const u = username.trim();
+    let msg: string | null = null;
+    if (!u && !password) msg = "Please enter your username and password. Try again.";
+    else if (!u) msg = "Username is missing. Try again.";
+    else if (!password) msg = "Password is missing. Try again.";
+    else if (u !== DEMO_USER || password !== DEMO_PASS)
+      msg = "Incorrect username or password. Try again.";
+    if (msg) {
+      setError(msg);
+      return false;
+    }
+    setError(null);
+    setAuthed(true);
+    window.dispatchEvent(new Event("lumen:success"));
+    return true;
+  };
+
+  const hasError = !!error;
+
   return (
     <AnimatePresence>
       {visible && (
@@ -237,17 +265,18 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-          style={{ y: float }}
-          className="relative w-[360px] rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-2xl"
+          style={{ y: float, borderColor: hasError ? "rgba(248,113,113,0.5)" : undefined }}
+          className="relative w-[360px] max-w-[calc(100vw-2rem)] rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-2xl transition-colors duration-300"
         >
-          {/* glow ring */}
           <div
             aria-hidden
             className="pointer-events-none absolute -inset-px rounded-3xl"
             style={{
               boxShadow: authed || success
                 ? "0 0 80px 0 rgba(134,239,172,0.25), inset 0 1px 0 rgba(255,255,255,0.08)"
-                : "0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
+                : hasError
+                  ? "0 0 60px 0 rgba(248,113,113,0.2), inset 0 1px 0 rgba(255,255,255,0.06)"
+                  : "0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
               transition: "box-shadow 600ms",
             }}
           />
@@ -261,22 +290,37 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
             </div>
 
             <div className="space-y-4">
-              <Field label="Username">
+              <Field label="Username" error={hasError}>
                 <input
                   type="text"
-                  defaultValue="ada.lovelace"
+                  value={username}
+                  maxLength={100}
+                  autoComplete="username"
+                  placeholder="ada.lovelace"
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setError(null);
+                  }}
                   className="w-full bg-transparent text-sm text-neutral-100 outline-none placeholder:text-neutral-600"
                 />
               </Field>
-              <Field label="Password">
+              <Field label="Password" error={hasError}>
                 <div className="flex items-center gap-2">
                   <input
                     type={showPw ? "text" : "password"}
-                    defaultValue="••••••••••"
-                    className="w-full bg-transparent text-sm tracking-widest text-neutral-100 outline-none"
+                    value={password}
+                    maxLength={128}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError(null);
+                    }}
+                    className="w-full bg-transparent text-sm tracking-widest text-neutral-100 outline-none placeholder:text-neutral-600"
                   />
                   <button
                     type="button"
+                    aria-label={showPw ? "Hide password" : "Show password"}
                     onClick={() => setShowPw((s) => !s)}
                     className="text-neutral-500 hover:text-neutral-200 transition-colors"
                   >
@@ -284,6 +328,19 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
                   </button>
                 </div>
               </Field>
+              <AnimatePresence>
+                {error && (
+                  <motion.p
+                    role="alert"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-xs text-red-400"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="flex items-center justify-between text-xs">
@@ -300,7 +357,7 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
             </div>
 
             <div className="pt-2">
-              <SwipeAuth onSuccess={() => setAuthed(true)} />
+              <SwipeAuth onAttempt={attempt} error={hasError} />
             </div>
           </div>
         </motion.div>
@@ -309,9 +366,23 @@ function LoginCard({ visible, success }: { visible: boolean; success: boolean })
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  error,
+}: {
+  label: string;
+  children: React.ReactNode;
+  error?: boolean;
+}) {
   return (
-    <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 transition-colors focus-within:border-amber-300/30 hover:border-white/15">
+    <div
+      className={`group rounded-xl border px-4 py-2.5 transition-colors ${
+        error
+          ? "border-red-400/60 bg-red-500/[0.04]"
+          : "border-white/[0.06] bg-white/[0.02] focus-within:border-amber-300/30 hover:border-white/15"
+      }`}
+    >
       <p className="text-[9px] tracking-[0.3em] uppercase text-neutral-500">{label}</p>
       <div className="mt-1">{children}</div>
     </div>
