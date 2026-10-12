@@ -22,6 +22,20 @@ function Lamp({ on, onToggle }: { on: boolean; onToggle: () => void }) {
     return () => controls.stop();
   }, [sway]);
 
+  // pull-the-string interaction
+  const MAX_PULL = 44;
+  const PULL_THRESHOLD = MAX_PULL * 0.7;
+  const pull = useMotionValue(0);
+  const cordY2 = useTransform(pull, (v) => 150 + v);
+  const handlePull = () => {
+    if (pull.get() >= PULL_THRESHOLD) {
+      onToggle();
+      animate(pull, 0, { type: "spring", stiffness: 260, damping: 16 });
+    } else {
+      animate(pull, 0, { type: "spring", stiffness: 340, damping: 24 });
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center" style={{ width: 360 }}>
       {/* hint */}
@@ -33,7 +47,7 @@ function Lamp({ on, onToggle }: { on: boolean; onToggle: () => void }) {
             exit={{ opacity: 0 }}
             className="absolute -top-8 text-[10px] tracking-[0.35em] uppercase text-neutral-400"
           >
-            Pull the string to toggle login
+            Pull down the string to toggle login
           </motion.p>
         )}
       </AnimatePresence>
@@ -71,17 +85,30 @@ function Lamp({ on, onToggle }: { on: boolean; onToggle: () => void }) {
         />
         {/* bulb */}
         <ellipse cx="180" cy="116" rx="7" ry="9" fill="url(#bulb)" />
-        {/* pull cord */}
-        <line x1="200" y1="110" x2="200" y2="150" stroke="#5a5a5e" strokeWidth="0.8" />
-        {/* pull knob — clickable */}
-        <g
-          onClick={onToggle}
-          style={{ cursor: "pointer" }}
-          className="hover:opacity-90"
+        {/* pull cord — stretches as you drag */}
+        <motion.line
+          x1="200"
+          y1="110"
+          x2="200"
+          y2={cordY2}
+          stroke="#5a5a5e"
+          strokeWidth="0.8"
+        />
+        {/* pull knob — drag down to toggle */}
+        <motion.g
+          drag="y"
+          dragConstraints={{ top: 0, bottom: MAX_PULL }}
+          dragElastic={0.06}
+          dragMomentum={false}
+          onDragEnd={handlePull}
+          whileDrag={{ scale: 1.1 }}
+          style={{ y: pull, cursor: "grab", touchAction: "none" }}
+          role="button"
+          aria-label="Pull down the string to toggle the lamp"
         >
           <circle cx="200" cy="156" r="6" fill={on ? "#f3c14a" : "#caa24a"} />
           <circle cx="200" cy="156" r="6" fill="none" stroke="#000" strokeOpacity="0.4" />
-        </g>
+        </motion.g>
         {/* vertical pole */}
         <rect x="178.5" y="80" width="3" height="240" fill="url(#pole)" />
         {/* base */}
